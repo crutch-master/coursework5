@@ -1,4 +1,4 @@
-name = "rooms"
+name = "contracts"
 version = "1.0.0"
 
 # Fill out these fields if you intend to generate HTML documentation or publish
@@ -14,7 +14,9 @@ version = "1.0.0"
 
 [dependencies]
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
-contracts = { path = "../contracts/" }
+shizo_rpc = { path = "../shizo_rpc/" }
+gleam_json = ">= 3.1.0 and < 4.0.0"
+gleam_time = ">= 1.6.0 and < 2.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"

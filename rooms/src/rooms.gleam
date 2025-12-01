@@ -1,3 +1,4 @@
+import contracts/rooms
 import gleam/io
 
 pub fn main() -> Nil {
