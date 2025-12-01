@@ -1,0 +1,7 @@
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
