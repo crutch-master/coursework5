@@ -1,8 +1,12 @@
 create table if not exists users (
   id bigserial primary key,
   email text not null,
-  name text not null
+  name text not null,
+  password_hash bytea not null
 );
+
+create unique index if not exists users_email_idx
+  on users (email);
 
 create table if not exists rooms (
   id bigserial primary key,
