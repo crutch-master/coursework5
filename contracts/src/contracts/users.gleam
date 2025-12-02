@@ -50,7 +50,7 @@ fn create_user_request_decoder() -> decode.Decoder(CreateUserRequest) {
 
 pub type CreateUserResponse {
   CreateUserResponse(user: User)
-  EmailTaken
+  CreateUserErrEmailTaken
 }
 
 fn create_user_response_codec() {
@@ -66,9 +66,9 @@ fn create_user_response_to_json(
         #("type", json.string("create_user_response")),
         #("user", user_to_json(user)),
       ])
-    EmailTaken ->
+    CreateUserErrEmailTaken ->
       json.object([
-        #("type", json.string("email_taken")),
+        #("type", json.string("create_user_err_email_taken")),
       ])
   }
 }
@@ -80,8 +80,8 @@ fn create_user_response_decoder() -> decode.Decoder(CreateUserResponse) {
       use user <- decode.field("user", user_decoder())
       decode.success(CreateUserResponse(user:))
     }
-    "email_taken" -> decode.success(EmailTaken)
-    _ -> decode.failure(EmailTaken, "CreateUserResponse")
+    "create_user_err_email_taken" -> decode.success(CreateUserErrEmailTaken)
+    _ -> decode.failure(CreateUserErrEmailTaken, "CreateUserResponse")
   }
 }
 
@@ -115,7 +115,8 @@ fn get_user_request_decoder() -> decode.Decoder(GetUserRequest) {
 
 pub type GetUserResponse {
   GetUserResponse(user: User)
-  BadToken
+  GetUserErrBadToken
+  GetUserErrNoUser
 }
 
 fn get_user_response_codec() {
@@ -129,9 +130,13 @@ fn get_user_response_to_json(get_user_response: GetUserResponse) -> json.Json {
         #("type", json.string("get_user_response")),
         #("user", user_to_json(user)),
       ])
-    BadToken ->
+    GetUserErrBadToken ->
       json.object([
-        #("type", json.string("bad_token")),
+        #("type", json.string("get_user_err_bad_token")),
+      ])
+    GetUserErrNoUser ->
+      json.object([
+        #("type", json.string("get_user_err_no_user")),
       ])
   }
 }
@@ -143,8 +148,9 @@ fn get_user_response_decoder() -> decode.Decoder(GetUserResponse) {
       use user <- decode.field("user", user_decoder())
       decode.success(GetUserResponse(user:))
     }
-    "bad_token" -> decode.success(BadToken)
-    _ -> decode.failure(BadToken, "GetUserResponse")
+    "get_user_err_bad_token" -> decode.success(GetUserErrBadToken)
+    "get_user_err_no_user" -> decode.success(GetUserErrNoUser)
+    _ -> decode.failure(GetUserErrNoUser, "GetUserResponse")
   }
 }
 
@@ -180,6 +186,8 @@ fn login_request_decoder() -> decode.Decoder(LoginRequest) {
 
 pub type LoginResponse {
   LoginResponse(jwt: String)
+  LoginErrNoUser
+  LoginErrBadCreds
 }
 
 fn login_response_codec() {
@@ -187,17 +195,84 @@ fn login_response_codec() {
 }
 
 fn login_response_to_json(login_response: LoginResponse) -> json.Json {
-  let LoginResponse(jwt:) = login_response
-  json.object([
-    #("jwt", json.string(jwt)),
-  ])
+  case login_response {
+    LoginResponse(jwt:) ->
+      json.object([
+        #("type", json.string("login_response")),
+        #("jwt", json.string(jwt)),
+      ])
+    LoginErrNoUser ->
+      json.object([
+        #("type", json.string("login_err_no_user")),
+      ])
+    LoginErrBadCreds ->
+      json.object([
+        #("type", json.string("login_err_bad_creds")),
+      ])
+  }
 }
 
 fn login_response_decoder() -> decode.Decoder(LoginResponse) {
-  use jwt <- decode.field("jwt", decode.string)
-  decode.success(LoginResponse(jwt:))
+  use variant <- decode.field("type", decode.string)
+  case variant {
+    "login_response" -> {
+      use jwt <- decode.field("jwt", decode.string)
+      decode.success(LoginResponse(jwt:))
+    }
+    "login_err_no_user" -> decode.success(LoginErrNoUser)
+    "login_err_bad_creds" -> decode.success(LoginErrBadCreds)
+    _ -> decode.failure(LoginErrNoUser, "LoginResponse")
+  }
 }
 
 pub fn login() {
   shizo_rpc.Procedure("login", login_request_codec(), login_response_codec())
+}
+
+pub type ValidateTokenResponse {
+  ValidateTokenResponse(user_id: Int)
+  ValidateTokenErrBadToken
+}
+
+fn validate_token_response_codec() {
+  shizo_rpc.Codec(
+    validate_token_response_to_json,
+    validate_token_response_decoder(),
+  )
+}
+
+fn validate_token_response_to_json(
+  validate_token_response: ValidateTokenResponse,
+) -> json.Json {
+  case validate_token_response {
+    ValidateTokenResponse(user_id:) ->
+      json.object([
+        #("type", json.string("validate_token_response")),
+        #("user_id", json.int(user_id)),
+      ])
+    ValidateTokenErrBadToken ->
+      json.object([
+        #("type", json.string("validate_token_err_bad_token")),
+      ])
+  }
+}
+
+fn validate_token_response_decoder() -> decode.Decoder(ValidateTokenResponse) {
+  use variant <- decode.field("type", decode.string)
+  case variant {
+    "validate_token_response" -> {
+      use user_id <- decode.field("user_id", decode.int)
+      decode.success(ValidateTokenResponse(user_id:))
+    }
+    "validate_token_err_bad_token" -> decode.success(ValidateTokenErrBadToken)
+    _ -> decode.failure(ValidateTokenErrBadToken, "ValidateTokenResponse")
+  }
+}
+
+pub fn validate_token() {
+  shizo_rpc.Procedure(
+    "validate_token",
+    get_user_request_codec(),
+    validate_token_response_codec(),
+  )
 }
