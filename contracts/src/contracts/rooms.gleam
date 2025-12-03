@@ -1,28 +1,24 @@
-import gleam/dict
 import gleam/dynamic/decode
 import gleam/json
 import shizo_rpc
 
 pub type Room {
-  Room(id: String, name: String, details: dict.Dict(String, String))
+  Room(id: Int, name: String, details: String)
 }
 
 fn room_to_json(room: Room) -> json.Json {
   let Room(id:, name:, details:) = room
   json.object([
-    #("id", json.string(id)),
+    #("id", json.int(id)),
     #("name", json.string(name)),
-    #("details", json.dict(details, fn(string) { string }, json.string)),
+    #("details", json.string(details)),
   ])
 }
 
 fn room_decoder() -> decode.Decoder(Room) {
-  use id <- decode.field("id", decode.string)
+  use id <- decode.field("id", decode.int)
   use name <- decode.field("name", decode.string)
-  use details <- decode.field(
-    "details",
-    decode.dict(decode.string, decode.string),
-  )
+  use details <- decode.field("details", decode.string)
   decode.success(Room(id:, name:, details:))
 }
 
