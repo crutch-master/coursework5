@@ -265,6 +265,23 @@ where user_id = $1;
   |> pog.execute(db)
 }
 
+/// A row you get from running the `place_booking` query
+/// defined in `./src/rooms/sql/place_booking.sql`.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type PlaceBookingRow {
+  PlaceBookingRow(
+    id: Int,
+    user_id: Int,
+    room_id: Int,
+    status: BookingStatus,
+    start_time: Timestamp,
+    end_time: Timestamp,
+  )
+}
+
 /// Runs the `place_booking` query
 /// defined in `./src/rooms/sql/place_booking.sql`.
 ///
@@ -277,8 +294,23 @@ pub fn place_booking(
   arg_2: Int,
   arg_3: Timestamp,
   arg_4: Timestamp,
-) -> Result(pog.Returned(Nil), pog.QueryError) {
-  let decoder = decode.map(decode.dynamic, fn(_) { Nil })
+) -> Result(pog.Returned(PlaceBookingRow), pog.QueryError) {
+  let decoder = {
+    use id <- decode.field(0, decode.int)
+    use user_id <- decode.field(1, decode.int)
+    use room_id <- decode.field(2, decode.int)
+    use status <- decode.field(3, booking_status_decoder())
+    use start_time <- decode.field(4, pog.timestamp_decoder())
+    use end_time <- decode.field(5, pog.timestamp_decoder())
+    decode.success(PlaceBookingRow(
+      id:,
+      user_id:,
+      room_id:,
+      status:,
+      start_time:,
+      end_time:,
+    ))
+  }
 
   "insert into bookings (
   user_id, 
@@ -286,7 +318,8 @@ pub fn place_booking(
   status,
   start_time,
   end_time
-) values ($1, $2, 'confirmed', $3, $4);
+) values ($1, $2, 'confirmed', $3, $4)
+returning *;
 "
   |> pog.query
   |> pog.parameter(pog.int(arg_1))
@@ -295,4 +328,25 @@ pub fn place_booking(
   |> pog.parameter(pog.timestamp(arg_4))
   |> pog.returning(decoder)
   |> pog.execute(db)
+}
+
+// --- Enums -------------------------------------------------------------------
+
+/// Corresponds to the Postgres `booking_status` enum.
+///
+/// > 🐿️ This type definition was generated automatically using v4.6.0 of the
+/// > [squirrel package](https://github.com/giacomocavalieri/squirrel).
+///
+pub type BookingStatus {
+  Cancelled
+  Confirmed
+}
+
+fn booking_status_decoder() -> decode.Decoder(BookingStatus) {
+  use booking_status <- decode.then(decode.string)
+  case booking_status {
+    "cancelled" -> decode.success(Cancelled)
+    "confirmed" -> decode.success(Confirmed)
+    _ -> decode.failure(Cancelled, "BookingStatus")
+  }
 }

@@ -10,12 +10,25 @@ services:
     ports:
       - 5432:5432
 
+  rabbitmq:
+    image: rabbitmq
+
   rooms:
     build:
       context: ./
       dockerfile: ./rooms/Dockerfile
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      RABBIT_HOST: rabbitmq
+
+  notifications:
+    build:
+      context: ./
+      dockerfile: ./notifications/Dockerfile
+    environment:
+      RABBIT_HOST: rabbitmq
+    ports:
+        - 3001:3000
 
   users:
     build:

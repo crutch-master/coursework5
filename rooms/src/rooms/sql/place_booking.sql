@@ -4,4 +4,5 @@ insert into bookings (
   status,
   start_time,
   end_time
-) values ($1, $2, 'confirmed', $3, $4);
+) values ($1, $2, 'confirmed', $3, $4)
+returning *;
