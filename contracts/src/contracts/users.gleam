@@ -41,7 +41,7 @@ fn create_user_request_to_json(
   ])
 }
 
-fn create_user_request_decoder() -> decode.Decoder(CreateUserRequest) {
+pub fn create_user_request_decoder() -> decode.Decoder(CreateUserRequest) {
   use email <- decode.field("email", decode.string)
   use name <- decode.field("name", decode.string)
   use password <- decode.field("password", decode.string)
@@ -57,7 +57,7 @@ fn create_user_response_codec() {
   shizo_rpc.Codec(create_user_response_to_json, create_user_response_decoder())
 }
 
-fn create_user_response_to_json(
+pub fn create_user_response_to_json(
   create_user_response: CreateUserResponse,
 ) -> json.Json {
   case create_user_response {
@@ -108,7 +108,7 @@ fn get_user_request_to_json(get_user_request: GetUserRequest) -> json.Json {
   ])
 }
 
-fn get_user_request_decoder() -> decode.Decoder(GetUserRequest) {
+pub fn get_user_request_decoder() -> decode.Decoder(GetUserRequest) {
   use jwt <- decode.field("jwt", decode.string)
   decode.success(GetUserRequest(jwt:))
 }
@@ -123,7 +123,9 @@ fn get_user_response_codec() {
   shizo_rpc.Codec(get_user_response_to_json, get_user_response_decoder())
 }
 
-fn get_user_response_to_json(get_user_response: GetUserResponse) -> json.Json {
+pub fn get_user_response_to_json(
+  get_user_response: GetUserResponse,
+) -> json.Json {
   case get_user_response {
     GetUserResponse(user:) ->
       json.object([
@@ -178,7 +180,7 @@ fn login_request_to_json(login_request: LoginRequest) -> json.Json {
   ])
 }
 
-fn login_request_decoder() -> decode.Decoder(LoginRequest) {
+pub fn login_request_decoder() -> decode.Decoder(LoginRequest) {
   use email <- decode.field("email", decode.string)
   use password <- decode.field("password", decode.string)
   decode.success(LoginRequest(email:, password:))
@@ -194,7 +196,7 @@ fn login_response_codec() {
   shizo_rpc.Codec(login_response_to_json, login_response_decoder())
 }
 
-fn login_response_to_json(login_response: LoginResponse) -> json.Json {
+pub fn login_response_to_json(login_response: LoginResponse) -> json.Json {
   case login_response {
     LoginResponse(jwt:) ->
       json.object([

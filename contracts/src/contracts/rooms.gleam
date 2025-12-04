@@ -74,7 +74,9 @@ fn get_rooms_response_codec() {
   shizo_rpc.Codec(get_rooms_response_to_json, get_rooms_response_decoder())
 }
 
-fn get_rooms_response_to_json(get_rooms_response: GetRoomsResponse) -> json.Json {
+pub fn get_rooms_response_to_json(
+  get_rooms_response: GetRoomsResponse,
+) -> json.Json {
   let GetRoomsResponse(rooms:) = get_rooms_response
   json.object([
     #("rooms", json.array(rooms, room_to_json)),
@@ -113,7 +115,7 @@ fn get_bookings_request_to_json(
   ])
 }
 
-fn get_bookings_request_decoder() -> decode.Decoder(GetBookingsRequest) {
+pub fn get_bookings_request_decoder() -> decode.Decoder(GetBookingsRequest) {
   use room_id <- decode.field("room_id", decode.int)
   use from_ts <- decode.field("from_ts", decode.int)
   use to_ts <- decode.field("to_ts", decode.int)
@@ -131,7 +133,7 @@ fn get_bookings_response_codec() {
   )
 }
 
-fn get_bookings_response_to_json(
+pub fn get_bookings_response_to_json(
   get_bookings_response: GetBookingsResponse,
 ) -> json.Json {
   let GetBookingsResponse(bookings:) = get_bookings_response
@@ -233,7 +235,7 @@ fn place_booking_response_codec() {
   )
 }
 
-fn place_booking_response_to_json(
+pub fn place_booking_response_to_json(
   place_booking_response: PlaceBookingResponse,
 ) -> json.Json {
   case place_booking_response {
@@ -301,7 +303,7 @@ fn cancel_booking_response_codec() {
   )
 }
 
-fn cancel_booking_response_to_json(
+pub fn cancel_booking_response_to_json(
   cancel_booking_response: CancelBookingResponse,
 ) -> json.Json {
   case cancel_booking_response {
