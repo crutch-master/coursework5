@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ team.name }}</h1>
+    <div>
+        {% if is_admin %}
+        <a href="{% url 'teams:team-update' team.pk %}" class="btn btn-outline-secondary">Edit</a>
+        <a href="{% url 'teams:team-delete' team.pk %}" class="btn btn-outline-danger">Delete</a>
+        {% endif %}
+        <a href="{% url 'teams:team-list' %}" class="btn btn-outline-secondary">Back</a>
+    </div>
+</div>
+
+<p>{{ team.description|default:"No description" }}</p>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Members</h5>
+                {% if is_admin %}
+                <a href="{% url 'teams:team-add-member' team.pk %}" class="btn btn-sm btn-primary">Add Member</a>
+                {% endif %}
+            </div>
+            <div class="list-group list-group-flush">
+                {% for membership in memberships %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        {{ membership.user.username }}
+                        <span class="badge bg-{{ membership.role|yesno:'primary,secondary' }} ms-2">{{ membership.get_role_display }}</span>
+                    </div>
+                    {% if is_admin and membership.user != request.user %}
+                    <form method="post" action="{% url 'teams:team-remove-member' team.pk membership.user.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="list-group-item text-muted">No members</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Shared Schedules</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for share in team.shared_schedules.all %}
+                <div class="list-group-item">
+                    <a href="{% url 'schedules:schedule-calendar' share.schedule.pk %}">{{ share.schedule.name }}</a>
+                    <span class="badge bg-{{ share.permission|yesno:'success,info' }} ms-2">{{ share.get_permission_display }}</span>
+                </div>
+                {% empty %}
+                <div class="list-group-item text-muted">No shared schedules</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

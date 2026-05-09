@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}My Schedules{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Schedules</h1>
+    <a href="{% url 'schedules:schedule-create' %}" class="btn btn-primary">New Schedule</a>
+</div>
+
+{% if schedule_list %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for schedule in schedule_list %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header" style="background-color: {{ schedule.color }}; color: white;">
+                <h5 class="mb-0">{{ schedule.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ schedule.description|default:"No description" }}</p>
+                <p class="text-muted small">Owner: {{ schedule.owner.username }}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'schedules:schedule-calendar' schedule.pk %}" class="btn btn-sm btn-outline-primary">Calendar</a>
+                <div>
+                    {% if schedule.owner == request.user %}
+                    <a href="{% url 'teams:schedule-share-create' %}?schedule={{ schedule.pk }}" class="btn btn-sm btn-outline-success">Share</a>
+                    <a href="{% url 'schedules:schedule-update' schedule.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a href="{% url 'schedules:schedule-delete' schedule.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">You don't have any schedules yet. Create one to get started!</p>
+{% endif %}
+{% endblock %}

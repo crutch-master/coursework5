@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load form_tags %}
+
+{% block title %}{% if event %}Edit Event{% else %}New Event{% endif %}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{% if event %}Edit Event{% else %}New Event in {{ schedule.name }}{% endif %}</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Event Details</h4>
+            {% for field in form %}
+            {% if field.name != 'participant_emails' %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field|bootstrap }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <h4 class="mt-4">Participants</h4>
+            <div class="mb-3">
+                <label for="id_participant_emails" class="form-label">Participant Emails</label>
+                <textarea name="participant_emails" id="id_participant_emails" class="form-control" rows="3"
+                    placeholder="Enter email addresses, one per line">{{ participant_emails }}</textarea>
+                <div class="form-text">Enter email addresses of participants, one per line</div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <h4>Recurrence (Optional)</h4>
+            {% for field in recurrence_form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field|bootstrap }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% for error in form.non_field_errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+    {% for error in recurrence_form.non_field_errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+
+    <button type="submit" class="btn btn-primary mt-3">Save Event</button>
+    <a href="{% url 'schedules:schedule-calendar' schedule.pk %}" class="btn btn-secondary mt-3">Cancel</a>
+</form>
+{% endblock %}

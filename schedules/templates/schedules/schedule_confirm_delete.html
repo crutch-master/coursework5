@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Schedule: {{ object.name }}{% endblock %}
+
+{% block content %}
+<h1>Delete Schedule</h1>
+<p>Are you sure you want to delete <strong>{{ object.name }}</strong>? All events, participants, recurrence rules, and shares in this schedule will also be permanently deleted.</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{% url 'schedules:schedule-list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

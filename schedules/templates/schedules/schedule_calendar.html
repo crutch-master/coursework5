@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ schedule.name }}{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ schedule.name }}</h1>
+    <div>
+        {% if schedule.owner == request.user %}
+        <a href="{% url 'teams:schedule-share-create' %}?schedule={{ schedule.pk }}" class="btn btn-outline-success">Share</a>
+        {% endif %}
+        {% if can_edit %}
+        <a href="{% url 'schedules:event-create' schedule.pk %}" class="btn btn-primary">New Event</a>
+        {% endif %}
+        <a href="{% url 'schedules:schedule-list' %}" class="btn btn-outline-secondary">Back to Schedules</a>
+    </div>
+</div>
+
+<div id="calendar"></div>
+
+{% if shares %}
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Shared With</h5>
+        <a href="{% url 'teams:schedule-share-create' %}?schedule={{ schedule.pk }}" class="btn btn-sm btn-outline-success">Add Share</a>
+    </div>
+    <div class="list-group list-group-flush">
+        {% for share in shares %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ share.shared_with_user.username|default:share.shared_with_team.name }}</span>
+            <div>
+                <span class="badge bg-{{ share.permission|yesno:'success,info' }}">{{ share.get_permission_display }}</span>
+                <a href="{% url 'teams:schedule-share-delete' share.pk %}" class="btn btn-sm btn-outline-danger ms-2">Remove</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: '{% url "schedules:schedule-calendar-json" schedule.pk %}',
+        editable: false,
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        height: 'auto',
+        nowIndicator: true,
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

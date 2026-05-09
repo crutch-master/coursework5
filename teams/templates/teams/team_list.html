@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}My Teams{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Teams</h1>
+    <a href="{% url 'teams:team-create' %}" class="btn btn-primary">New Team</a>
+</div>
+
+{% if team_list %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for team in team_list %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ team.name }}</h5>
+                <p class="card-text">{{ team.description|default:"No description" }}</p>
+                <p class="text-muted small">Created by: {{ team.created_by.username }}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'teams:team-detail' team.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                <div>
+                    {% if team.pk in admin_team_ids %}
+                    <a href="{% url 'teams:team-update' team.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">You're not part of any teams yet. Create one to get started!</p>
+{% endif %}
+{% endblock %}
