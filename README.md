@@ -18,4 +18,4 @@ Django 6 - Python 3.14 - SQLite
 ## Ссылки
 
 - [GitHub](https://github.com/crutch-master/coursework5)
-- Демо на Render — *скоро*
+- [Render](https://coursework5.onrender.com)
